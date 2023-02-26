@@ -38,8 +38,9 @@ ggplot(ROC) +
 library(proxy)
 library(pals)
 library(brew)
+library(class)
 
-D2z <- read.table("H:/Course/CS 760/hw3-1/data/D2z.txt", quote="\"", comment.char="")
+D2z <- read.table("C:/Course/CS 760/hw3-1/data/D2z.txt", quote="\"", comment.char="")
 colnames(D2z) <- c("x1","x2","y")
 testD2z <- data.frame(x1 = rep(seq(-2,2,0.1),41),
                       x2 = rep(seq(-2,2,0.1), each=41),
@@ -54,16 +55,18 @@ for (i in 1:1681) {
 D2z$y <- as.factor(D2z$y)
 testD2z$y <- as.factor(testD2z$y)
 
+testD2z$y2 <- knn(D2z[,1:2],testD2z[,1:2],D2z[,3],1)
+
 ggplot(data = testD2z ,aes(x = x1, y = x2, colour = y)) +
   geom_point(shape = "circle", size = 1.5) +
   geom_point(data = D2z ,shape = "triangle down filled", size = 2) +
   scale_color_hue(direction = 1) +
   theme_minimal()
-
+ 
 # Q2
 
 library(data.table)
-emails <- as.data.frame(fread("H:/Course/CS 760/hw3-1/data/emails.csv"))
+emails <- as.data.frame(fread("C:/Course/CS 760/hw3-1/data/emails.csv"))
 
 emails_train <- {}
 emails_test <- {}
@@ -90,6 +93,9 @@ for (i in 1:5) {
     pred[j] <- emails_train[[i]][,3002][which.min(dist_matrix[[i]][,j])]  
   }
   emails_test[[i]][,"KNN_1"] <- pred
+  emails_test[[i]][,"KNN_1_2"] <- knn(emails_train[[i]][,2:3001],
+                                      emails_test[[i]][,2:3001],
+                                      emails_train[[i]][,3002],1,use.all = F)
 }
 
 table(emails_test[[1]][,"KNN_1"],emails_test[[1]][,3002])
@@ -97,6 +103,15 @@ table(emails_test[[2]][,"KNN_1"],emails_test[[2]][,3002])
 table(emails_test[[3]][,"KNN_1"],emails_test[[3]][,3002])
 table(emails_test[[4]][,"KNN_1"],emails_test[[4]][,3002])
 table(emails_test[[5]][,"KNN_1"],emails_test[[5]][,3002])
+
+table(emails_test[[1]][,"KNN_1_2"],emails_test[[1]][,3002])
+table(emails_test[[2]][,"KNN_1_2"],emails_test[[2]][,3002])
+table(emails_test[[3]][,"KNN_1_2"],emails_test[[3]][,3002])
+table(emails_test[[4]][,"KNN_1_2"],emails_test[[4]][,3002])
+table(emails_test[[5]][,"KNN_1_2"],emails_test[[5]][,3002])
+
+
+
 
 (592+233)/1000
 (613+240)/1000
@@ -183,6 +198,9 @@ for (i in 1:5) {
     pred[j] <- getmode(emails_train[[i]][,3002][topn(dist_matrix[[i]][,j], 3,decreasing = F, index = T)])
   }
   emails_test[[i]][,"KNN_3"] <- pred
+  emails_test[[i]][,"KNN_3_2"] <- knn(emails_train[[i]][,2:3001],
+                                      emails_test[[i]][,2:3001],
+                                      emails_train[[i]][,3002],3,use.all = F)
 }
 
 for (i in 1:5) {
@@ -190,6 +208,9 @@ for (i in 1:5) {
     pred[j] <- getmode(emails_train[[i]][,3002][topn(dist_matrix[[i]][,j], 5,decreasing = F, index = T)])
   }
   emails_test[[i]][,"KNN_5"] <- pred
+  emails_test[[i]][,"KNN_5_2"] <- knn(emails_train[[i]][,2:3001],
+                                      emails_test[[i]][,2:3001],
+                                      emails_train[[i]][,3002],5,use.all = F)
 }
 
 for (i in 1:5) {
@@ -197,6 +218,9 @@ for (i in 1:5) {
     pred[j] <- getmode(emails_train[[i]][,3002][topn(dist_matrix[[i]][,j], 7,decreasing = F, index = T)])
   }
   emails_test[[i]][,"KNN_7"] <- pred
+  emails_test[[i]][,"KNN_7_2"] <- knn(emails_train[[i]][,2:3001],
+                                      emails_test[[i]][,2:3001],
+                                      emails_train[[i]][,3002],7,use.all = F)
 }
 
 for (i in 1:5) {
@@ -204,71 +228,75 @@ for (i in 1:5) {
     pred[j] <- getmode(emails_train[[i]][,3002][topn(dist_matrix[[i]][,j], 9,decreasing = F, index = T)])
   }
   emails_test[[i]][,"KNN_9"] <- pred
+  emails_test[[i]][,"KNN_9_2"] <- knn(emails_train[[i]][,2:3001],
+                                      emails_test[[i]][,2:3001],
+                                      emails_train[[i]][,3002],9,use.all = F)
 }
 
 mean(
-  (table(emails_test[[1]][,"KNN_1"],emails_test[[1]][,3002])[1,1] +
-   table(emails_test[[1]][,"KNN_1"],emails_test[[1]][,3002])[2,2])/1000,
-  (table(emails_test[[2]][,"KNN_1"],emails_test[[2]][,3002])[1,1] +
-   table(emails_test[[2]][,"KNN_1"],emails_test[[2]][,3002])[2,2])/1000,
-  (table(emails_test[[3]][,"KNN_1"],emails_test[[3]][,3002])[1,1] +
-   table(emails_test[[3]][,"KNN_1"],emails_test[[3]][,3002])[2,2])/1000,
-  (table(emails_test[[4]][,"KNN_1"],emails_test[[4]][,3002])[1,1] +
-   table(emails_test[[4]][,"KNN_1"],emails_test[[4]][,3002])[2,2])/1000,
-  (table(emails_test[[5]][,"KNN_1"],emails_test[[5]][,3002])[1,1] +
-   table(emails_test[[5]][,"KNN_1"],emails_test[[5]][,3002])[2,2])/1000)
+  (table(emails_test[[1]][,"KNN_1_2"],emails_test[[1]][,3002])[1,1] +
+   table(emails_test[[1]][,"KNN_1_2"],emails_test[[1]][,3002])[2,2])/1000,
+  (table(emails_test[[2]][,"KNN_1_2"],emails_test[[2]][,3002])[1,1] +
+   table(emails_test[[2]][,"KNN_1_2"],emails_test[[2]][,3002])[2,2])/1000,
+  (table(emails_test[[3]][,"KNN_1_2"],emails_test[[3]][,3002])[1,1] +
+   table(emails_test[[3]][,"KNN_1_2"],emails_test[[3]][,3002])[2,2])/1000,
+  (table(emails_test[[4]][,"KNN_1_2"],emails_test[[4]][,3002])[1,1] +
+   table(emails_test[[4]][,"KNN_1_2"],emails_test[[4]][,3002])[2,2])/1000,
+  (table(emails_test[[5]][,"KNN_1_2"],emails_test[[5]][,3002])[1,1] +
+   table(emails_test[[5]][,"KNN_1_2"],emails_test[[5]][,3002])[2,2])/1000)
 
 
 mean(
-(table(emails_test[[1]][,"KNN_3"],emails_test[[1]][,3002])[1,1] +
- table(emails_test[[1]][,"KNN_3"],emails_test[[1]][,3002])[2,2])/1000,
-(table(emails_test[[2]][,"KNN_3"],emails_test[[2]][,3002])[1,1] +
- table(emails_test[[2]][,"KNN_3"],emails_test[[2]][,3002])[2,2])/1000,
-(table(emails_test[[3]][,"KNN_3"],emails_test[[3]][,3002])[1,1] +
- table(emails_test[[3]][,"KNN_3"],emails_test[[3]][,3002])[2,2])/1000,
-(table(emails_test[[4]][,"KNN_3"],emails_test[[4]][,3002])[1,1] +
- table(emails_test[[4]][,"KNN_3"],emails_test[[4]][,3002])[2,2])/1000,
-(table(emails_test[[5]][,"KNN_3"],emails_test[[5]][,3002])[1,1] +
- table(emails_test[[5]][,"KNN_3"],emails_test[[5]][,3002])[2,2])/1000)
+(table(emails_test[[1]][,"KNN_3_2"],emails_test[[1]][,3002])[1,1] +
+ table(emails_test[[1]][,"KNN_3_2"],emails_test[[1]][,3002])[2,2])/1000,
+(table(emails_test[[2]][,"KNN_3_2"],emails_test[[2]][,3002])[1,1] +
+ table(emails_test[[2]][,"KNN_3_2"],emails_test[[2]][,3002])[2,2])/1000,
+(table(emails_test[[3]][,"KNN_3_2"],emails_test[[3]][,3002])[1,1] +
+ table(emails_test[[3]][,"KNN_3_2"],emails_test[[3]][,3002])[2,2])/1000,
+(table(emails_test[[4]][,"KNN_3_2"],emails_test[[4]][,3002])[1,1] +
+ table(emails_test[[4]][,"KNN_3_2"],emails_test[[4]][,3002])[2,2])/1000,
+(table(emails_test[[5]][,"KNN_3_2"],emails_test[[5]][,3002])[1,1] +
+ table(emails_test[[5]][,"KNN_3_2"],emails_test[[5]][,3002])[2,2])/1000)
 
 mean(
-  (table(emails_test[[1]][,"KNN_5"],emails_test[[1]][,3002])[1,1] +
-   table(emails_test[[1]][,"KNN_5"],emails_test[[1]][,3002])[2,2])/1000,
-  (table(emails_test[[2]][,"KNN_5"],emails_test[[2]][,3002])[1,1] +
-   table(emails_test[[2]][,"KNN_5"],emails_test[[2]][,3002])[2,2])/1000,
-  (table(emails_test[[3]][,"KNN_5"],emails_test[[3]][,3002])[1,1] +
-   table(emails_test[[3]][,"KNN_5"],emails_test[[3]][,3002])[2,2])/1000,
-  (table(emails_test[[4]][,"KNN_5"],emails_test[[4]][,3002])[1,1] +
-   table(emails_test[[4]][,"KNN_5"],emails_test[[4]][,3002])[2,2])/1000,
-  (table(emails_test[[5]][,"KNN_5"],emails_test[[5]][,3002])[1,1] +
-   table(emails_test[[5]][,"KNN_5"],emails_test[[5]][,3002])[2,2])/1000)
+  (table(emails_test[[1]][,"KNN_5_2"],emails_test[[1]][,3002])[1,1] +
+   table(emails_test[[1]][,"KNN_5_2"],emails_test[[1]][,3002])[2,2])/1000,
+  (table(emails_test[[2]][,"KNN_5_2"],emails_test[[2]][,3002])[1,1] +
+   table(emails_test[[2]][,"KNN_5_2"],emails_test[[2]][,3002])[2,2])/1000,
+  (table(emails_test[[3]][,"KNN_5_2"],emails_test[[3]][,3002])[1,1] +
+   table(emails_test[[3]][,"KNN_5_2"],emails_test[[3]][,3002])[2,2])/1000,
+  (table(emails_test[[4]][,"KNN_5_2"],emails_test[[4]][,3002])[1,1] +
+   table(emails_test[[4]][,"KNN_5_2"],emails_test[[4]][,3002])[2,2])/1000,
+  (table(emails_test[[5]][,"KNN_5_2"],emails_test[[5]][,3002])[1,1] +
+   table(emails_test[[5]][,"KNN_5_2"],emails_test[[5]][,3002])[2,2])/1000)
 
 mean(
-  (table(emails_test[[1]][,"KNN_7"],emails_test[[1]][,3002])[1,1] +
-   table(emails_test[[1]][,"KNN_7"],emails_test[[1]][,3002])[2,2])/1000,
-  (table(emails_test[[2]][,"KNN_7"],emails_test[[2]][,3002])[1,1] +
-   table(emails_test[[2]][,"KNN_7"],emails_test[[2]][,3002])[2,2])/1000,
-  (table(emails_test[[3]][,"KNN_7"],emails_test[[3]][,3002])[1,1] +
-   table(emails_test[[3]][,"KNN_7"],emails_test[[3]][,3002])[2,2])/1000,
-  (table(emails_test[[4]][,"KNN_7"],emails_test[[4]][,3002])[1,1] +
-   table(emails_test[[4]][,"KNN_7"],emails_test[[4]][,3002])[2,2])/1000,
-  (table(emails_test[[5]][,"KNN_7"],emails_test[[5]][,3002])[1,1] +
-   table(emails_test[[5]][,"KNN_7"],emails_test[[5]][,3002])[2,2])/1000)
+  (table(emails_test[[1]][,"KNN_7_2"],emails_test[[1]][,3002])[1,1] +
+   table(emails_test[[1]][,"KNN_7_2"],emails_test[[1]][,3002])[2,2])/1000,
+  (table(emails_test[[2]][,"KNN_7_2"],emails_test[[2]][,3002])[1,1] +
+   table(emails_test[[2]][,"KNN_7_2"],emails_test[[2]][,3002])[2,2])/1000,
+  (table(emails_test[[3]][,"KNN_7_2"],emails_test[[3]][,3002])[1,1] +
+   table(emails_test[[3]][,"KNN_7_2"],emails_test[[3]][,3002])[2,2])/1000,
+  (table(emails_test[[4]][,"KNN_7_2"],emails_test[[4]][,3002])[1,1] +
+   table(emails_test[[4]][,"KNN_7_2"],emails_test[[4]][,3002])[2,2])/1000,
+  (table(emails_test[[5]][,"KNN_7_2"],emails_test[[5]][,3002])[1,1] +
+   table(emails_test[[5]][,"KNN_7_2"],emails_test[[5]][,3002])[2,2])/1000)
 
 mean(
-  (table(emails_test[[1]][,"KNN_9"],emails_test[[1]][,3002])[1,1] +
-   table(emails_test[[1]][,"KNN_9"],emails_test[[1]][,3002])[2,2])/1000,
-  (table(emails_test[[2]][,"KNN_9"],emails_test[[2]][,3002])[1,1] +
-   table(emails_test[[2]][,"KNN_9"],emails_test[[2]][,3002])[2,2])/1000,
-  (table(emails_test[[3]][,"KNN_9"],emails_test[[3]][,3002])[1,1] +
-   table(emails_test[[3]][,"KNN_9"],emails_test[[3]][,3002])[2,2])/1000,
-  (table(emails_test[[4]][,"KNN_9"],emails_test[[4]][,3002])[1,1] +
-   table(emails_test[[4]][,"KNN_9"],emails_test[[4]][,3002])[2,2])/1000,
-  (table(emails_test[[5]][,"KNN_9"],emails_test[[5]][,3002])[1,1] +
-   table(emails_test[[5]][,"KNN_9"],emails_test[[5]][,3002])[2,2])/1000)
+  (table(emails_test[[1]][,"KNN_9_2"],emails_test[[1]][,3002])[1,1] +
+   table(emails_test[[1]][,"KNN_9_2"],emails_test[[1]][,3002])[2,2])/1000,
+  (table(emails_test[[2]][,"KNN_9_2"],emails_test[[2]][,3002])[1,1] +
+   table(emails_test[[2]][,"KNN_9_2"],emails_test[[2]][,3002])[2,2])/1000,
+  (table(emails_test[[3]][,"KNN_9_2"],emails_test[[3]][,3002])[1,1] +
+   table(emails_test[[3]][,"KNN_9_2"],emails_test[[3]][,3002])[2,2])/1000,
+  (table(emails_test[[4]][,"KNN_9_2"],emails_test[[4]][,3002])[1,1] +
+   table(emails_test[[4]][,"KNN_9_2"],emails_test[[4]][,3002])[2,2])/1000,
+  (table(emails_test[[5]][,"KNN_9_2"],emails_test[[5]][,3002])[1,1] +
+   table(emails_test[[5]][,"KNN_9_2"],emails_test[[5]][,3002])[2,2])/1000)
 
 
 purn <- data.frame(k=c(1,3,5,7,9),Average_accuracy=c(0.825,0.847,0.838,0.838,0.843))
+purn <- data.frame(k=c(1,3,5,7,9),Average_accuracy=c(0.826,0.85,0.84,0.834,0.839))
 
 ggplot(purn) +
   aes(x = k, y = Average_accuracy) +
@@ -292,6 +320,11 @@ for (j in 1:1000) {
 }
 test[,"KNN_5"] <- pred
 
+test[,"KNN_5_2"] <- knn(train[,2:3001],
+                        test[,2:3001],
+                        train[,3002],5,prob=T)
+
+
 x <- t(as.matrix(train[,2:3001]))
 y <- as.vector(t((train[,3002])))
 theta <- rep(0.1,3000)
@@ -310,14 +343,14 @@ while (dtheta > 1e-5 & iter < 2000) {
 
 test[,"logistic"] <- as.vector(1 / (1+exp(-as.vector(theta %*% t(as.matrix(test[,2:3001]))))))
 
-result <- test %>% dplyr::select(Prediction,KNN_5,logistic)
+result <- test %>% dplyr::select(Prediction,KNN_5,logistic,KNN_5_2)
 
 library(ROCit)
 par( mfrow= c(2,1) )
 ROCit_obj <- rocit(as.numeric(result$logistic),as.factor(result$Prediction))
 plot(ROCit_obj)
 title("logistic regression")
-ROCit_obj <- rocit(as.numeric(result$KNN_5),as.factor(result$Prediction))
+ROCit_obj <- rocit(as.numeric(result$KNN_5_2),as.factor(result$Prediction))
 plot(ROCit_obj)
 title("kNN, k=5")
 
